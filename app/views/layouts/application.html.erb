@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <title><%= content_for(:title) || "Recipe Sharing" %></title>
+  <!-- Bootstrap CSS -->
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+</head>
+
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="<%= root_path %>">Recipe Sharing</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <%= link_to "Home", root_path, class: "nav-link" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Recipes", recipes_path, class: "nav-link" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "About", about_path, class: "nav-link" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Contact", contact_path, class: "nav-link" %>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+<!-- Main Content -->
+<main class="container my-5">
+  <%= yield %>
+</main>
+
+<!-- Footer -->
+<footer class="bg-dark text-white text-center py-4">
+  <div class="container">
+    <p>&copy; <%= Time.now.year %> Recipe Sharing. All rights reserved.</p>
+    <p class="small">Built with <i class="bi bi-heart-fill text-danger"></i> using Rails and Bootstrap.</p>
+  </div>
+</footer>
+
+<!-- Subscription Modal -->
+<div class="modal fade" id="subscriptionModal" tabindex="-1" aria-labelledby="subscriptionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="subscriptionModalLabel">Subscribe to Recipe Sharing</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Get access to exclusive recipes and features with our subscription plan.</p>
+        <ul>
+          <li>Unlimited access to all recipes</li>
+          <li>Exclusive content</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <%= link_to "Subscribe Now", '/subscription', class: "btn btn-primary" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const subscriptionModal = new bootstrap.Modal(document.getElementById('subscriptionModal'));
+        subscriptionModal.show();
+    });
+</script>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>

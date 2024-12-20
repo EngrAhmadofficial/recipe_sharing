@@ -1,0 +1,56 @@
+<div class="container my-4">
+  <h1 class="mb-4 text-center">All Recipes</h1>
+
+  <!-- Search Bar -->
+  <div class="search-bar my-4">
+    <%= form_with url: recipes_path, method: :get, local: true do %>
+      <div class="input-group">
+        <%= text_field_tag :query, params[:query], placeholder: "Search recipes...", class: "form-control" %>
+        <button class="btn btn-primary" type="submit">Search</button>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Recipe Cards -->
+  <% if @recipes.any? %>
+    <div class="row">
+      <% @recipes.each do |recipe| %>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 shadow-sm">
+            <!-- Recipe Image -->
+            <% if recipe.image_url.present? %>
+              <%= image_tag recipe.image_url, class: "card-img-top", alt: recipe.name %>
+            <% else %>
+              <img src="https://via.placeholder.com/600x400" class="card-img-top" alt="Default Recipe Image">
+            <% end %>
+
+            <!-- Recipe Details -->
+            <div class="card-body">
+              <h5 class="card-title text-truncate"><%= recipe.name %></h5>
+              <p class="card-text">
+                <strong>Ingredients:</strong> <%= truncate(recipe.ingredients, length: 100) %>
+              </p>
+              <%= link_to "View Recipe", recipe_path(recipe), class: "btn btn-primary btn-sm" %>
+            </div>
+
+            <!-- Like Button -->
+            <div class="card-footer bg-white text-center">
+              <%= link_to "👍 Like", upvote_recipe_path(recipe), method: :post, class: "btn btn-outline-success btn-sm", data: { turbo: false } %>
+              <p class="mb-0 mt-1"><%= recipe.votes_for.size %> Likes</p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @recipes %>
+    </div>
+  <% else %>
+    <!-- No Recipes Found -->
+    <div class="alert alert-info text-center" role="alert">
+      No recipes found. <%= link_to "Add a new recipe", new_recipe_path, class: "alert-link" %>.
+    </div>
+  <% end %>
+</div>

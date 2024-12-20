@@ -1,0 +1,28 @@
+
+# app/views/recipes/show.html.erb
+<div class="container my-4">
+  <div class="card">
+    <img src="<%= @recipe.image_url %>" class="card-img-top" alt="<%= @recipe.name %>">
+    <div class="card-body">
+      <h1 class="card-title text-primary"><%= @recipe.name %></h1>
+      <h5 class="text-dark">Ingredients:</h5>
+      <ul>
+        <% @recipe.ingredients.split(",").each do |ingredient| %>
+          <li><%= ingredient.strip %></li>
+        <% end %>
+      </ul>
+      <h5 class="text-dark mt-3">Instructions:</h5>
+      <ol>
+        <% @recipe.instructions.split(".").each do |step| %>
+          <% next if step.blank? %>
+          <li><%= step.strip %></li>
+        <% end %>
+      </ol>
+      <div class="d-flex justify-content-between mt-4">
+        <%= link_to "Back to Recipes", recipes_path, class: "btn btn-outline-secondary" %>
+        <%= link_to "👍 Like", upvote_recipe_path(@recipe), method: :post, class: "btn btn-outline-success" %>
+        <span class="badge bg-success align-self-center"><%= @recipe.votes_for.size %> Likes</span>
+      </div>
+    </div>
+  </div>
+</div>

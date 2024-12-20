@@ -1,0 +1,26 @@
+<div class="container my-4">
+  <h1 class="mb-4 text-center">All Recipes</h1>
+  <% if @recipes.any? %>
+    <div class="row">
+      <% @recipes.each do |recipe| %>
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <%= image_tag recipe.image_url, class: "card-img-top", alt: recipe.name %>
+            <div class="card-body">
+              <h5 class="card-title"><%= recipe.name %></h5>
+              <p class="card-text"><strong>Ingredients:</strong> <%= recipe.ingredients %></p>
+              <%= link_to "View Recipe", recipe_path(recipe), class: "btn btn-primary" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @recipes %>
+    </div>
+  <% else %>
+    <div class="alert alert-info text-center" role="alert">
+      No recipes found. <%= link_to "Add a new recipe", new_recipe_path, class: "alert-link" %>.
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,41 @@
+@import 'bootstrap/scss/bootstrap';
+@import 'bootstrap-icons/font/bootstrap-icons';
+@import 'bootstrap';
+
+body {
+  background: url('https://source.unsplash.com/1600x900/?food') no-repeat center center fixed;
+  background-size: cover;
+  color: #343a40;
+}
+//body {
+//  background-color: #f8f9fa; /* Light grey background for readability */
+//  color: #343a40; /* Dark text */
+//}
+
+.navbar {
+  background-color: #ffc107; /* Warm yellow */
+}
+
+.navbar a {
+  color: #212529;
+}
+
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.card img {
+  height: 200px;
+  object-fit: cover; /* Cropped images look better */
+}
+
+footer {
+  background-color: #212529;
+  color: #f8f9fa;
+}
+
+footer a {
+  color: #ffc107;
+}
+
