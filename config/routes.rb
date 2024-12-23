@@ -1,21 +1,18 @@
 # config/routes.rb
 Rails.application.routes.draw do
 
-  resources :recipes do
-    member do
-      post :upvote
-    end
-  end
+
   get "pages/about"
   get "pages/contact"
-  devise_for :users
+  resources :recipes, only: [:index, :show, :new, :create, :edit, :update, :destroy]
   root 'recipes#index'
+  # get '/products' to: 'product#index'
   get '/about', to: 'pages#about'
   get '/contact', to: 'pages#contact'
-  get '/subscription', to: 'subscriptions#new'
-
-  namespace :admin do
-    resources :recipes
-    root 'dashboard#index'
+  resources :recipes do
+    collection do
+      get :test_openai_service
+    end
   end
+
 end

@@ -22,10 +22,15 @@ gem 'faker'
 
 # Gemfile
 gem 'kaminari'
+gem 'kaminari-bootstrap'
+gem 'sassc-rails'
+# Gemfile
+gem 'http'
+
+
 # Gemfile
 gem 'friendly_id', '~> 5.4'
 gem 'unsplash'
-gem 'devise'
 
 
 # Use Redis adapter to run Action Cable in production
@@ -63,6 +68,7 @@ group :development do
 
   # Highlight the fine-grained location where an error occurred [https://github.com/ruby/error_highlight]
   gem "error_highlight", ">= 0.4.0", platforms: [ :ruby ]
+  gem 'dotenv-rails'
 end
 
 group :test do
@@ -70,7 +76,3 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
-
-gem "acts_as_votable", "~> 0.14.0"
-
-gem "letter_opener", "~> 1.10"

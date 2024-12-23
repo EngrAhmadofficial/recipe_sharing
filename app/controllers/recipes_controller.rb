@@ -1,17 +1,27 @@
 # app/controllers/recipes_controller.rb
 class RecipesController < ApplicationController
-  before_action :authenticate_user!, only: [:new, :create, :edit, :update, :destroy]
 
   def index
     if params[:query].present?
+      # Perform database search for matching recipes
       @recipes = Recipe.where("name ILIKE ? OR ingredients ILIKE ?", "%#{params[:query]}%", "%#{params[:query]}%").page(params[:page]).per(6)
+
+      @products = Product.where("name ILIKE ? OR description ILIKE ?", "%#{params[:query]}%", "%#{params[:query]}%")
+      # Perform AI-based search and retrieve recommendations
+      @ai_results = OpenAiService.search_recipes(params[:query], @recipes, @products)
     else
+      # Load all recipes with pagination if no query is present
       @recipes = Recipe.page(params[:page]).per(6)
+      @products = Product.none
+      @ai_results = nil
     end
   end
 
+
   def show
-    @recipe = Recipe.find(params[:id])
+    @recipe = Recipe.find_by_slug(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to recipes_path, alert: "Recipe not found."
   end
 
   def new
@@ -44,13 +54,6 @@ class RecipesController < ApplicationController
     @recipe = Recipe.find(params[:id])
     @recipe.destroy
     redirect_to recipes_path, notice: "Recipe deleted successfully."
-  end
-
-
-  def upvote
-    @recipe = Recipe.find(params[:id])
-    @recipe.upvote_by current_user
-    redirect_to recipe_path(@recipe), notice: "You liked this recipe!"
   end
 
   private

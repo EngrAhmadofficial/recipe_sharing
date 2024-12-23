@@ -1,4 +1,26 @@
-<div class="container my-4">
-  <h1>Contact Us</h1>
-  <p>If you have any questions, feel free to reach out at <a href="mailto:support@recipes.com">support@recipes.com</a>.</p>
+<div class="container my-5">
+  <h1 class="text-center text-primary">Contact Us</h1>
+  <p class="text-center text-muted">We'd love to hear from you. Fill out the form below to get in touch.</p>
+
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <%= form_with url: contact_path, method: :post, local: true do |f| %>
+        <div class="mb-3">
+          <%= f.label :name, "Name", class: "form-label" %>
+          <%= f.text_field :name, class: "form-control", placeholder: "Your Name", required: true %>
+        </div>
+        <div class="mb-3">
+          <%= f.label :email, "Email", class: "form-label" %>
+          <%= f.email_field :email, class: "form-control", placeholder: "Your Email", required: true %>
+        </div>
+        <div class="mb-3">
+          <%= f.label :message, "Message", class: "form-label" %>
+          <%= f.text_area :message, class: "form-control", placeholder: "Your Message", rows: 5, required: true %>
+        </div>
+        <div class="d-grid">
+          <%= f.submit "Send Message", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 </div>

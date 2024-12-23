@@ -1,27 +1,36 @@
+<div class="container my-5">
+  <div class="card shadow-lg border-0">
+    <!-- Recipe Image -->
+    <% if @recipe.image_url.present? %>
+      <%= image_tag @recipe.image_url, class: "card-img-top rounded-top", alt: @recipe.name %>
+    <% else %>
+      <img src="https://via.placeholder.com/800x400" class="card-img-top rounded-top" alt="Default Recipe Image">
+    <% end %>
 
-# app/views/recipes/show.html.erb
-<div class="container my-4">
-  <div class="card">
-    <img src="<%= @recipe.image_url %>" class="card-img-top" alt="<%= @recipe.name %>">
+    <!-- Recipe Details -->
     <div class="card-body">
-      <h1 class="card-title text-primary"><%= @recipe.name %></h1>
-      <h5 class="text-dark">Ingredients:</h5>
-      <ul>
+      <h1 class="card-title text-center text-primary"><%= @recipe.name %></h1>
+
+      <!-- Ingredients -->
+      <h4 class="text-dark mt-4">Ingredients:</h4>
+      <ul class="list-group list-group-flush">
         <% @recipe.ingredients.split(",").each do |ingredient| %>
-          <li><%= ingredient.strip %></li>
+          <li class="list-group-item"><%= ingredient.strip %></li>
         <% end %>
       </ul>
-      <h5 class="text-dark mt-3">Instructions:</h5>
-      <ol>
+
+      <!-- Instructions -->
+      <h4 class="text-dark mt-4">Instructions:</h4>
+      <ol class="list-group list-group-numbered">
         <% @recipe.instructions.split(".").each do |step| %>
           <% next if step.blank? %>
-          <li><%= step.strip %></li>
+          <li class="list-group-item"><%= step.strip %></li>
         <% end %>
       </ol>
-      <div class="d-flex justify-content-between mt-4">
-        <%= link_to "Back to Recipes", recipes_path, class: "btn btn-outline-secondary" %>
-        <%= link_to "👍 Like", upvote_recipe_path(@recipe), method: :post, class: "btn btn-outline-success" %>
-        <span class="badge bg-success align-self-center"><%= @recipe.votes_for.size %> Likes</span>
+
+      <!-- Actions -->
+      <div class="d-flex justify-content-center mt-4">
+        <%= link_to "Back to Recipes", recipes_path, class: "btn btn-outline-secondary btn-lg" %>
       </div>
     </div>
   </div>

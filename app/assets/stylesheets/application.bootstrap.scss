@@ -1,6 +1,8 @@
-@import 'bootstrap/scss/bootstrap';
-@import 'bootstrap-icons/font/bootstrap-icons';
-@import 'bootstrap';
+//@import 'bootstrap/scss/bootstrap';
+//@import 'bootstrap-icons/font/bootstrap-icons';
+//@import 'bootstrap';
+@use "bootstrap/scss/bootstrap" as *;
+@use "bootstrap-icons/font/bootstrap-icons" as *;
 
 body {
   background: url('https://source.unsplash.com/1600x900/?food') no-repeat center center fixed;
