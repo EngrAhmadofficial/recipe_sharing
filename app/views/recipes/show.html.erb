@@ -1,37 +1,127 @@
-<div class="container my-5">
-  <div class="card shadow-lg border-0">
-    <!-- Recipe Image -->
-    <% if @recipe.image_url.present? %>
-      <%= image_tag @recipe.image_url, class: "card-img-top rounded-top", alt: @recipe.name %>
-    <% else %>
-      <img src="https://via.placeholder.com/800x400" class="card-img-top rounded-top" alt="Default Recipe Image">
-    <% end %>
-
-    <!-- Recipe Details -->
-    <div class="card-body">
-      <h1 class="card-title text-center text-primary"><%= @recipe.name %></h1>
-
-      <!-- Ingredients -->
-      <h4 class="text-dark mt-4">Ingredients:</h4>
-      <ul class="list-group list-group-flush">
-        <% @recipe.ingredients.split(",").each do |ingredient| %>
-          <li class="list-group-item"><%= ingredient.strip %></li>
+<div class="container">
+  <!-- Recipe Header -->
+  <div class="hero-section fade-in-up">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="text-gradient display-4 fw-bold mb-3"><%= @recipe.name %></h1>
+        <% if @recipe.category.present? %>
+          <span class="badge badge-primary fs-6 mb-3"><%= @recipe.category %></span>
         <% end %>
-      </ul>
-
-      <!-- Instructions -->
-      <h4 class="text-dark mt-4">Instructions:</h4>
-      <ol class="list-group list-group-numbered">
-        <% @recipe.instructions.split(".").each do |step| %>
-          <% next if step.blank? %>
-          <li class="list-group-item"><%= step.strip %></li>
-        <% end %>
-      </ol>
-
-      <!-- Actions -->
-      <div class="d-flex justify-content-center mt-4">
-        <%= link_to "Back to Recipes", recipes_path, class: "btn btn-outline-secondary btn-lg" %>
+        <p class="lead text-muted mb-4">
+          Discover the perfect blend of flavors and ingredients in this amazing recipe.
+        </p>
+        <div class="d-flex gap-3">
+          <%= link_to recipes_path, class: "btn btn-outline-primary" do %>
+            <i class="bi bi-arrow-left me-2"></i>Back to Recipes
+          <% end %>
+          <% if user_signed_in? %>
+            <%= link_to "#", class: "btn btn-primary" do %>
+              <i class="bi bi-heart me-2"></i>Add to Favorites
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="recipe-image rounded-custom-lg overflow-hidden shadow-custom">
+          <% if @recipe.image_url.present? %>
+            <%= image_tag @recipe.image_url, class: "w-100", style: "height: 300px; object-fit: cover;", alt: @recipe.name %>
+          <% else %>
+            <img src="https://source.unsplash.com/800x400/?food,<%= @recipe.name %>" class="w-100" style="height: 300px; object-fit: cover;" alt="<%= @recipe.name %>">
+          <% end %>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- Recipe Content -->
+  <div class="row g-5 mt-4">
+    <!-- Ingredients -->
+    <div class="col-lg-6 fade-in-up">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-list-check me-2"></i>Ingredients
+          </h3>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <% @recipe.ingredients.split(",").each do |ingredient| %>
+              <li class="list-group-item d-flex align-items-center">
+                <i class="bi bi-dot text-primary me-3"></i>
+                <span><%= ingredient.strip %></span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="col-lg-6 fade-in-up">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-gear me-2"></i>Instructions
+          </h3>
+        </div>
+        <div class="card-body">
+          <ol class="list-group list-group-numbered">
+            <% @recipe.instructions.split(".").each do |step| %>
+              <% next if step.blank? %>
+              <li class="list-group-item"><%= step.strip %></li>
+            <% end %>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nutritional Information -->
+  <% if @recipe.calories.present? || @recipe.protein.present? || @recipe.carbs.present? || @recipe.fats.present? %>
+    <div class="mt-5 fade-in-up">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-graph-up me-2"></i>Nutritional Information
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row g-4">
+            <% if @recipe.calories.present? %>
+              <div class="col-md-3 col-6">
+                <div class="text-center">
+                  <div class="fs-1 text-primary fw-bold"><%= @recipe.calories %></div>
+                  <div class="text-muted">Calories</div>
+                </div>
+              </div>
+            <% end %>
+            <% if @recipe.protein.present? %>
+              <div class="col-md-3 col-6">
+                <div class="text-center">
+                  <div class="fs-1 text-success fw-bold"><%= @recipe.protein %>g</div>
+                  <div class="text-muted">Protein</div>
+                </div>
+              </div>
+            <% end %>
+            <% if @recipe.carbs.present? %>
+              <div class="col-md-3 col-6">
+                <div class="text-center">
+                  <div class="fs-1 text-warning fw-bold"><%= @recipe.carbs %>g</div>
+                  <div class="text-muted">Carbs</div>
+                </div>
+              </div>
+            <% end %>
+            <% if @recipe.fats.present? %>
+              <div class="col-md-3 col-6">
+                <div class="text-center">
+                  <div class="fs-1 text-danger fw-bold"><%= @recipe.fats %>g</div>
+                  <div class="text-muted">Fats</div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </div>

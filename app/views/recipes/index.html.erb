@@ -1,87 +1,229 @@
-<div class="container my-5">
-  <h1 class="mb-4 text-center text-primary">Discover Recipes</h1>
-
-  <!-- Search Bar -->
-  <div class="search-bar my-4">
-    <%= form_with url: recipes_path, method: :get, local: true do %>
-      <div class="input-group shadow-sm">
-        <%= text_field_tag :query, params[:query], placeholder: "Search for recipes...", class: "form-control rounded-start-pill" %>
-        <button class="btn btn-primary rounded-end-pill px-4" type="submit">
-          <i class="bi bi-search"></i> Search
-        </button>
-      </div>
-    <% end %>
+<div class="container">
+  <!-- Hero Section -->
+  <div class="hero-section fade-in-up">
+    <h1 class="text-gradient display-4 fw-bold mb-3">
+      <i class="bi bi-egg-fried me-3"></i>Discover Amazing Recipes
+    </h1>
+    <p class="lead text-muted mb-4">
+      Explore our collection of delicious recipes powered by AI. Find the perfect dish for any occasion.
+    </p>
+    
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <%= form_with url: recipes_path, method: :get, local: true do %>
+        <div class="input-group">
+          <%= text_field_tag :query, params[:query], placeholder: "Search for recipes, ingredients, or cuisines...", class: "form-control" %>
+          <button class="btn btn-primary" type="submit">
+            <i class="bi bi-search"></i> Search
+          </button>
+        </div>
+      <% end %>
+    </div>
   </div>
 
   <!-- AI-Powered Recommendations -->
   <% if @ai_results.present? %>
-    <div class="ai-results mt-4">
-      <h5 class="text-primary">AI-Powered Recipe and Product Suggestions:</h5>
-      <div class="alert alert-info shadow-sm">
-        <%= simple_format(@ai_results) %>
+    <div class="ai-results mt-5 fade-in-up">
+      <div class="d-flex align-items-center mb-4">
+        <div class="ai-icon me-3">
+          <i class="bi bi-robot"></i>
+        </div>
+        <h3 class="text-gradient mb-0">AI-Powered Recommendations</h3>
       </div>
+      
+      <% if @ai_results.is_a?(Hash) && @ai_results[:error] %>
+        <div class="alert alert-danger shadow-sm">
+          <i class="bi bi-exclamation-triangle"></i> <%= @ai_results[:error] %>
+        </div>
+      <% elsif @ai_results.is_a?(Hash) && @ai_results['recommendations'] %>
+        <% if @ai_results['recommendations'].any? %>
+          <div class="row g-4 mb-4">
+            <% @ai_results['recommendations'].each do |rec| %>
+              <div class="col-lg-6 col-md-12">
+                <div class="card recipe-card h-100">
+                  <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0">
+                        <i class="bi bi-egg-fried me-2"></i> <%= rec['name'] %>
+                      </h6>
+                      <% if rec['calories'] %>
+                        <span class="badge bg-primary"><%= rec['calories'] %> cal</span>
+                      <% end %>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-2">
+                      <% if rec['protein'] %>
+                        <span class="badge bg-success me-2">Protein: <%= rec['protein'] %>g</span>
+                      <% end %>
+                      <% if rec['carbs'] %>
+                        <span class="badge bg-info me-2">Carbs: <%= rec['carbs'] %>g</span>
+                      <% end %>
+                      <% if rec['fats'] %>
+                        <span class="badge bg-warning text-dark">Fats: <%= rec['fats'] %>g</span>
+                      <% end %>
+                    </div>
+                    <% if rec['ingredients'] %>
+                      <h6 class="text-primary mb-2">
+                        <i class="bi bi-list-check me-2"></i>Ingredients
+                      </h6>
+                      <ul class="list-group list-group-flush mb-3">
+                        <% rec['ingredients'].each do |ingredient| %>
+                          <li class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-dot text-primary me-2"></i>
+                            <span><%= ingredient %></span>
+                          </li>
+                        <% end %>
+                      </ul>
+                    <% end %>
+                    <% if rec['instructions'] %>
+                      <h6 class="text-primary mb-2">
+                        <i class="bi bi-gear me-2"></i>Instructions
+                      </h6>
+                      <% if rec['instructions'].is_a?(Array) %>
+                        <ol class="list-group list-group-numbered">
+                          <% rec['instructions'].each do |instruction| %>
+                            <li class="list-group-item"><%= instruction %></li>
+                          <% end %>
+                        </ol>
+                      <% else %>
+                        <p><%= rec['instructions'] %></p>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% elsif @ai_results.is_a?(Hash) && @ai_results['recipes'] %>
+        <!-- Recipes Section (legacy) -->
+        <% if @ai_results['recipes'].any? %>
+          <div class="row g-4 mb-4">
+            <% @ai_results['recipes'].each do |recipe| %>
+              <div class="col-lg-6 col-md-12">
+                <div class="card recipe-card h-100">
+                  <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0">
+                        <i class="bi bi-egg-fried me-2"></i> <%= recipe['name'] %>
+                      </h6>
+                      <% if recipe['calories'] %>
+                        <span class="badge badge-primary"><%= recipe['calories'] %> cal</span>
+                      <% end %>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <!-- Ingredients -->
+                    <% if recipe['ingredients'] %>
+                      <h6 class="text-primary mb-2">
+                        <i class="bi bi-list-check me-2"></i>Ingredients
+                      </h6>
+                      <ul class="list-group list-group-flush mb-3">
+                        <% recipe['ingredients'].each do |ingredient| %>
+                          <li class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-dot text-primary me-2"></i>
+                            <strong class="me-2"><%= ingredient['quantity'] %></strong>
+                            <span><%= ingredient['item'] %></span>
+                          </li>
+                        <% end %>
+                      </ul>
+                    <% end %>
+                    <!-- Instructions -->
+                    <% if recipe['instructions'] %>
+                      <h6 class="text-primary mb-2">
+                        <i class="bi bi-gear me-2"></i>Instructions
+                      </h6>
+                      <ol class="list-group list-group-numbered">
+                        <% recipe['instructions'].each do |instruction| %>
+                          <li class="list-group-item"><%= instruction %></li>
+                        <% end %>
+                      </ol>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+        <!-- Suggested Products Section -->
+        <% if @ai_results['suggested_products'] && @ai_results['suggested_products'].any? %>
+          <div class="mt-5">
+            <h4 class="text-gradient mb-4">
+              <i class="bi bi-bag me-2"></i>Suggested Products
+            </h4>
+            <div class="row g-4">
+              <% @ai_results['suggested_products'].each do |product| %>
+                <div class="col-md-6 col-lg-4">
+                  <div class="card ai-feature-card h-100">
+                    <div class="card-body text-center">
+                      <i class="bi bi-box-seam text-primary fs-1 mb-3"></i>
+                      <h6 class="card-title mb-2"><%= product['product'] %></h6>
+                      <p class="card-text text-muted small mb-0"><%= product['description'] %></p>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <!-- Fallback for non-JSON responses -->
+        <div class="alert alert-info shadow-sm">
+          <%= simple_format(@ai_results.to_s) %>
+        </div>
+      <% end %>
     </div>
   <% end %>
 
   <!-- Recipes -->
   <% if @recipes.any? %>
-    <h2 class="mt-5 text-primary">Recipes:</h2>
-    <div class="row g-4">
-      <% @recipes.each do |recipe| %>
-        <div class="col-lg-4 col-md-6">
-          <div class="card h-100 border-0 shadow-lg">
-            <% if recipe.image_url.present? %>
-              <%= image_tag recipe.image_url, class: "card-img-top rounded-top", alt: recipe.name %>
-            <% else %>
-              <img src="https://via.placeholder.com/600x400" class="card-img-top rounded-top" alt="Default Recipe Image">
-            <% end %>
-            <div class="card-body">
-              <h5 class="card-title text-primary text-truncate"><%= recipe.name %></h5>
-              <p class="card-text text-muted">
-                <strong>Ingredients:</strong> <%= truncate(recipe.ingredients, length: 100) %>
-              </p>
-              <%= link_to "View Recipe", recipe_path(recipe), class: "btn btn-primary btn-sm" %>
+    <div class="mt-5 fade-in-up">
+      <h2 class="text-gradient mb-4">
+        <i class="bi bi-collection me-2"></i>All Recipes
+      </h2>
+      <div class="row g-4">
+        <% @recipes.each do |recipe| %>
+          <div class="col-lg-4 col-md-6">
+            <div class="card recipe-card h-100">
+              <div class="recipe-image">
+                <% if recipe.image_url.present? %>
+                  <%= image_tag recipe.image_url, class: "card-img-top", alt: recipe.name %>
+                <% else %>
+                  <img src="https://source.unsplash.com/600x400/?food,<%= recipe.name %>" class="card-img-top" alt="<%= recipe.name %>">
+                <% end %>
+                <div class="recipe-overlay">
+                  <div class="text-white">
+                    <h6 class="mb-1"><%= recipe.name %></h6>
+                    <small>Click to view recipe</small>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title text-primary mb-3"><%= recipe.name %></h5>
+                <p class="card-text text-muted mb-3">
+                  <%= truncate(recipe.ingredients, length: 120) %>
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <%= link_to "View Recipe", recipe_path(recipe), class: "btn btn-primary btn-sm" %>
+                  <% if recipe.category.present? %>
+                    <span class="badge badge-primary"><%= recipe.category %></span>
+                  <% end %>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      <% end %>
-    </div>
+        <% end %>
+      </div>
 
-    <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-5">
-      <%= paginate @recipes %>
+      <!-- Pagination -->
+      <div class="d-flex justify-content-center mt-5">
+        <%= paginate @recipes %>
+      </div>
     </div>
   <% else %>
-    <div class="alert alert-warning text-center shadow-sm mt-4">
-      <i class="bi bi-exclamation-triangle"></i> No recipes found.
+    <div class="alert alert-warning text-center mt-5 fade-in-up">
+      <i class="bi bi-exclamation-triangle me-2"></i> No recipes found.
     </div>
   <% end %>
 </div>
-<!-- Product Listings -->
-<% if @products.any? %>
-  <h2 class="mt-5 text-primary">Suggested Products:</h2>
-  <div class="row g-4">
-    <% @products.each do |product| %>
-      <div class="col-lg-3 col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <% if product.image_url.present? %>
-            <%= image_tag product.image_url, class: "card-img-top rounded-top", alt: product.name %>
-          <% else %>
-            <img src="https://via.placeholder.com/300x300" class="card-img-top rounded-top" alt="Default Product Image">
-          <% end %>
-          <div class="card-body">
-            <h6 class="card-title text-primary text-truncate"><%= product.name %></h6>
-            <p class="card-text text-muted">
-              <%= truncate(product.description, length: 80) %>
-            </p>
-            <p class="text-primary"><strong>Price:</strong> $<%= product.price %></p>
-          </div>
-        </div>
-      </div>
-    <% end %>
-  </div>
-<% else %>
-  <div class="alert alert-info text-center shadow-sm mt-4">
-    <i class="bi bi-info-circle"></i> No products match your query.
-  </div>
-<% end %>

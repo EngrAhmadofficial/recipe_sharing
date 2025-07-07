@@ -1,22 +1,31 @@
-# app/controllers/recipes_controller.rb
 class RecipesController < ApplicationController
-
+  before_action :authenticate_user!, only: [:index, :show]
   def index
     if params[:query].present?
-      # Perform database search for matching recipes
+      # Search for recipes and products based on query
       @recipes = Recipe.where("name ILIKE ? OR ingredients ILIKE ?", "%#{params[:query]}%", "%#{params[:query]}%").page(params[:page]).per(6)
-
       @products = Product.where("name ILIKE ? OR description ILIKE ?", "%#{params[:query]}%", "%#{params[:query]}%")
-      # Perform AI-based search and retrieve recommendations
-      @ai_results = OpenAiService.search_recipes(params[:query], @recipes, @products)
+      
+      # Use enhanced AI service for personalized recommendations
+      @ai_results = AiRecipeService.get_personalized_recommendations(current_user, params[:query])
     else
-      # Load all recipes with pagination if no query is present
-      @recipes = Recipe.page(params[:page]).per(6)
+      # Filter based on user preferences (if set)
+      if current_user && current_user.preferences['favoriteCategories']
+        # Use user preferences to filter recipes
+        @recipes = Recipe.where(category: current_user.preferences['favoriteCategories']).page(params[:page]).per(6)
+      else
+        @recipes = Recipe.page(params[:page]).per(6)
+      end
+
       @products = Product.none
-      @ai_results = nil
+      # Fetch personalized recommendations from AI if user is logged in
+      if current_user
+        @ai_results = AiRecipeService.get_personalized_recommendations(current_user)
+      else
+        @ai_results = nil
+      end
     end
   end
-
 
   def show
     @recipe = Recipe.find_by_slug(params[:id])
@@ -56,9 +65,50 @@ class RecipesController < ApplicationController
     redirect_to recipes_path, notice: "Recipe deleted successfully."
   end
 
+  def favorite
+    @recipe = Recipe.find(params[:id])
+    user_recipe = current_user.user_recipes.find_or_initialize_by(recipe: @recipe)
+    user_recipe.favorite = !user_recipe.favorite
+    user_recipe.save
+    
+    redirect_back(fallback_location: recipe_path(@recipe), notice: user_recipe.favorite ? 'Added to favorites!' : 'Removed from favorites.')
+  end
+
+  def rate
+    @recipe = Recipe.find(params[:id])
+    user_recipe = current_user.user_recipes.find_or_initialize_by(recipe: @recipe)
+    user_recipe.rating = params[:rating]
+    user_recipe.save
+    
+    redirect_back(fallback_location: recipe_path(@recipe), notice: 'Rating saved successfully!')
+  end
+
+  def review
+    @recipe = Recipe.find(params[:id])
+    user_recipe = current_user.user_recipes.find_or_initialize_by(recipe: @recipe)
+    user_recipe.review = params[:review]
+    user_recipe.save
+    
+    redirect_back(fallback_location: recipe_path(@recipe), notice: 'Review saved successfully!')
+  end
+
+  def search_by_ingredients
+    ingredients = params[:ingredients]&.split(',')&.map(&:strip) || []
+    @recipes = Recipe.where("ingredients ILIKE ANY (ARRAY[?])", ingredients.map { |i| "%#{i}%" })
+    @ai_results = AiRecipeService.find_recipes_by_ingredients(ingredients, current_user)
+  end
+
+  def nutritional_analysis
+    @recipe = Recipe.find(params[:recipe_id]) if params[:recipe_id]
+  end
+
   private
 
   def recipe_params
-    params.require(:recipe).permit(:name, :ingredients, :instructions, :image_url, :category)
+    params.require(:recipe).permit(:name, :ingredients, :instructions, :image_url, :category, :calories, :protein, :carbs, :fats, :fiber, :sugar, :sodium)
+  end
+
+  def authenticate_user!
+    redirect_to '/login', alert: 'You need to be logged in to access this page.' unless session[:user_id]
   end
 end

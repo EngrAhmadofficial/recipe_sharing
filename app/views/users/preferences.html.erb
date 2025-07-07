@@ -1,0 +1,13 @@
+<h2>Your Preferences</h2>
+<p><strong>Favorite Categories:</strong> <%= current_user.preferences['favoriteCategories'].join(', ') %></p>
+
+<%= form_with model: current_user, url: update_preferences_user_path, method: :patch do |form| %>
+  <div class="form-group">
+    <%= form.label :favorite_categories, "Select your favorite recipe categories" %><br />
+    <%= form.collection_check_boxes :preferences, ['Italian', 'Vegan', 'Desserts'], current_user.preferences['favoriteCategories'] %>
+  </div>
+
+  <div class="form-group">
+    <%= form.submit "Save Preferences", class: "btn btn-primary" %>
+  </div>
+<% end %>
