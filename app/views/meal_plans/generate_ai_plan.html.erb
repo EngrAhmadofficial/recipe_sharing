@@ -1,0 +1,126 @@
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="mb-0">Generate AI Meal Plan</h2>
+        </div>
+        <div class="card-body">
+          <% if @ai_plan %>
+            <div class="alert alert-success">
+              <h4>AI Generated Meal Plan</h4>
+              <p>Here's your personalized meal plan based on your preferences:</p>
+            </div>
+            
+            <div class="ai-meal-plan">
+              <% if @ai_plan.is_a?(Hash) && @ai_plan['meal_plan'] %>
+                <% @ai_plan['meal_plan'].each do |day| %>
+                  <div class="card mb-3">
+                    <div class="card-header">
+                      <h5 class="mb-0"><%= day['day'].titleize %></h5>
+                    </div>
+                    <div class="card-body">
+                      <% %w[breakfast lunch dinner].each do |meal_type| %>
+                        <% meal = day['meals'][meal_type] %>
+                        <% if meal %>
+                          <div class="meal-item mb-3">
+                            <h6 class="text-primary"><%= meal_type.titleize %></h6>
+                            <div class="row">
+                              <div class="col-md-8">
+                                <h6><%= meal['name'] %></h6>
+                                <div class="nutrition-info small text-muted">
+                                  <span class="me-3">Calories: <%= meal['calories'] %></span>
+                                  <span class="me-3">Protein: <%= meal['protein'] %>g</span>
+                                  <span class="me-3">Carbs: <%= meal['carbs'] %>g</span>
+                                  <span>Fats: <%= meal['fats'] %>g</span>
+                                </div>
+                                <% if meal['ingredients'] %>
+                                  <div class="mt-2">
+                                    <strong>Ingredients:</strong>
+                                    <ul class="list-unstyled ms-3">
+                                      <% meal['ingredients'].each do |ingredient| %>
+                                        <li>• <%= ingredient %></li>
+                                      <% end %>
+                                    </ul>
+                                  </div>
+                                <% end %>
+                                <% if meal['instructions'] %>
+                                  <div class="mt-2">
+                                    <strong>Instructions:</strong>
+                                    <p class="ms-3"><%= meal['instructions'] %></p>
+                                  </div>
+                                <% end %>
+                              </div>
+                            </div>
+                          </div>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+                
+                <div class="d-flex justify-content-between mt-4">
+                  <%= link_to "Back to Meal Plans", meal_plans_path, class: "btn btn-secondary" %>
+                  <%= form_tag create_from_ai_meal_plans_path, method: :post, class: "d-inline" do %>
+                    <%= hidden_field_tag :meal_plan_json, @ai_plan.to_json %>
+                    <%= submit_tag "Save This Meal Plan", class: "btn btn-success" %>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="alert alert-info">
+                  <p>No meal plan data available. Please try generating a new plan.</p>
+                </div>
+                <%= link_to "Back to Meal Plans", meal_plans_path, class: "btn btn-secondary" %>
+              <% end %>
+            </div>
+          <% else %>
+            <form method="post" action="<%= generate_ai_plan_meal_plans_path %>">
+              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+              
+              <div class="mb-3">
+                <label for="days" class="form-label">Number of Days</label>
+                <select name="days" id="days" class="form-select">
+                  <option value="3">3 Days</option>
+                  <option value="5">5 Days</option>
+                  <option value="7" selected>7 Days</option>
+                  <option value="14">14 Days</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="preferences" class="form-label">Dietary Preferences (Optional)</label>
+                <textarea name="preferences" id="preferences" class="form-control" rows="3" 
+                          placeholder="e.g., vegetarian, gluten-free, low-carb, etc."></textarea>
+              </div>
+              
+              <div class="d-flex justify-content-between">
+                <%= link_to "Back to Meal Plans", meal_plans_path, class: "btn btn-secondary" %>
+                <button type="submit" class="btn btn-primary">Generate Meal Plan</button>
+              </div>
+            </form>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.ai-meal-plan .meal-item {
+  border-left: 3px solid #007bff;
+  padding-left: 15px;
+}
+
+.nutrition-info {
+  font-size: 0.875rem;
+}
+
+.ai-meal-plan .card {
+  border: 1px solid #dee2e6;
+}
+
+.ai-meal-plan .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+</style> 

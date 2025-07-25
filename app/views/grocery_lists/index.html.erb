@@ -1,0 +1,104 @@
+<div class="container">
+  <!-- Hero Section -->
+  <div class="hero-section fade-in-up">
+    <h1 class="text-gradient display-4 fw-bold mb-3">
+      <i class="bi bi-bag me-3"></i>Grocery Lists
+    </h1>
+    <p class="lead text-muted mb-4">
+      Organize your shopping with smart grocery lists. Generate lists from meal plans or create them manually.
+    </p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="d-flex justify-content-center gap-3 mb-5">
+    <%= link_to new_grocery_list_path, class: "btn btn-primary btn-lg" do %>
+      <i class="bi bi-plus-circle me-2"></i>Create New List
+    <% end %>
+    <%= link_to generate_from_meal_plan_grocery_lists_path, class: "btn btn-success btn-lg" do %>
+      <i class="bi bi-calendar-check me-2"></i>Generate from Meal Plan
+    <% end %>
+  </div>
+
+  <!-- Grocery Lists -->
+  <% if @grocery_lists.any? %>
+    <div class="row g-4">
+      <% @grocery_lists.each do |grocery_list| %>
+        <div class="col-lg-6 col-xl-4">
+          <div class="card recipe-card h-100">
+            <div class="card-header">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                  <i class="bi bi-bag me-2"></i><%= grocery_list.name %>
+                </h5>
+                <% if grocery_list.completed %>
+                  <span class="badge badge-success">Completed</span>
+                <% else %>
+                  <span class="badge badge-warning">In Progress</span>
+                <% end %>
+              </div>
+            </div>
+            <div class="card-body">
+              <% if grocery_list.items.present? %>
+                <div class="mb-3">
+                  <h6 class="text-primary mb-2">
+                    <i class="bi bi-list-check me-2"></i>Items (<%= grocery_list.items.length %>)
+                  </h6>
+                  <div class="row g-2">
+                    <% grocery_list.items.first(6).each do |item| %>
+                      <div class="col-6">
+                        <div class="grocery-item <%= 'completed' if item['completed'] %>">
+                          <i class="bi bi-dot text-primary me-2"></i>
+                          <span><%= item['name'] %></span>
+                        </div>
+                      </div>
+                    <% end %>
+                    <% if grocery_list.items.length > 6 %>
+                      <div class="col-12">
+                        <small class="text-muted">
+                          <i class="bi bi-three-dots me-1"></i>
+                          And <%= grocery_list.items.length - 6 %> more items...
+                        </small>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% else %>
+                <p class="text-muted">No items added yet.</p>
+              <% end %>
+              
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                  <i class="bi bi-calendar me-1"></i>
+                  <%= grocery_list.created_at.strftime("%B %d, %Y") %>
+                </small>
+                <div class="btn-group btn-group-sm">
+                  <%= link_to grocery_list_path(grocery_list), class: "btn btn-outline-primary" do %>
+                    <i class="bi bi-eye"></i>
+                  <% end %>
+                  <%= link_to edit_grocery_list_path(grocery_list), class: "btn btn-outline-secondary" do %>
+                    <i class="bi bi-pencil"></i>
+                  <% end %>
+                  <%= link_to grocery_list_path(grocery_list), method: :delete, 
+                      data: { confirm: "Are you sure?" }, class: "btn btn-outline-danger" do %>
+                    <i class="bi bi-trash"></i>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-5 fade-in-up">
+      <div class="ai-feature-card">
+        <i class="bi bi-bag text-primary fs-1 mb-3"></i>
+        <h3 class="text-muted mb-3">No grocery lists yet</h3>
+        <p class="text-muted mb-4">Start by creating your first grocery list or generate one from your meal plans.</p>
+        <%= link_to new_grocery_list_path, class: "btn btn-primary" do %>
+          <i class="bi bi-plus-circle me-2"></i>Create Your First List
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

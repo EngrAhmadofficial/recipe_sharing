@@ -1,0 +1,236 @@
+<div class="container">
+  <!-- Hero Section -->
+  <div class="hero-section fade-in-up">
+    <h1 class="text-gradient display-4 fw-bold mb-3">
+      <i class="bi bi-calendar3 me-3"></i>AI Meal Planning
+    </h1>
+    <p class="lead text-muted mb-4">
+      Let our AI create personalized meal plans based on your preferences, dietary restrictions, and health goals.
+    </p>
+  </div>
+
+  <!-- Planning Form -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card fade-in-up">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-gear me-2"></i>Create Your Meal Plan
+          </h3>
+        </div>
+        <div class="card-body">
+          <%= form_with url: ai_meal_planning_path, method: :post, local: true do %>
+            <div class="row g-4">
+              <div class="col-md-6">
+                <label for="days" class="form-label">Number of Days</label>
+                <%= select_tag :days, 
+                    options_for_select([['3 days', 3], ['5 days', 5], ['7 days', 7]], 3), 
+                    class: "form-control" %>
+              </div>
+              <div class="col-md-6">
+                <label for="goal" class="form-label">Primary Goal</label>
+                <%= select_tag :goal, 
+                    options_for_select([
+                      ['Weight Loss', 'weight_loss'],
+                      ['Muscle Gain', 'muscle_gain'],
+                      ['Maintenance', 'maintenance'],
+                      ['Healthy Eating', 'healthy_eating']
+                    ]), 
+                    class: "form-control" %>
+              </div>
+              <div class="col-12">
+                <label for="preferences" class="form-label">Additional Preferences</label>
+                <%= text_area_tag :preferences, params[:preferences], 
+                    placeholder: "e.g., vegetarian, low-carb, quick meals, budget-friendly", 
+                    class: "form-control", 
+                    rows: 3 %>
+                <div class="form-text">
+                  <i class="bi bi-lightbulb me-1"></i>
+                  Tell us about your dietary preferences, cooking time, budget, or any other requirements.
+                </div>
+              </div>
+              <div class="col-12 text-center">
+                <%= submit_tag "Generate Meal Plan", class: "btn btn-primary btn-lg" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Flash Messages -->
+  <% if flash[:notice] %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="bi bi-check-circle me-2"></i><%= flash[:notice] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% end %>
+  
+  <% if flash[:alert] %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i><%= flash[:alert] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% end %>
+
+  <!-- Results -->
+  <% if @ai_results.present? %>
+    <div class="mt-5 fade-in-up">
+      <% if @ai_results.is_a?(Hash) && @ai_results[:error] %>
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i><%= @ai_results[:error] %>
+        </div>
+      <% elsif @ai_results.is_a?(Hash) && @ai_results['meal_plan'] %>
+        <h3 class="text-gradient mb-4">
+          <i class="bi bi-calendar-check me-2"></i>Your Personalized Meal Plan
+        </h3>
+        <div class="row g-4">
+          <% @ai_results['meal_plan'].each_with_index do |day, index| %>
+            <div class="col-lg-6">
+              <div class="card meal-plan-day">
+                <div class="card-header">
+                  <h5 class="mb-0">
+                    <i class="bi bi-calendar-day me-2"></i><%= day['day'] %>
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <% if day['meals'] %>
+                    <!-- Breakfast -->
+                    <% if day['meals']['breakfast'] %>
+                      <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <h6 class="text-primary mb-0">
+                            <i class="bi bi-sunrise me-2"></i>Breakfast
+                          </h6>
+                          <% if day['meals']['breakfast']['calories'] %>
+                            <span class="badge bg-primary"><%= day['meals']['breakfast']['calories'] %> cal</span>
+                          <% end %>
+                        </div>
+                        <h6 class="mb-2"><%= day['meals']['breakfast']['name'] %></h6>
+                        <p class="text-muted small mb-2"><%= day['meals']['breakfast']['instructions'] %></p>
+                        <small class="text-muted">
+                          <strong>Ingredients:</strong> <%= day['meals']['breakfast']['ingredients']&.join(', ') %>
+                        </small>
+                      </div>
+                    <% end %>
+
+                    <!-- Lunch -->
+                    <% if day['meals']['lunch'] %>
+                      <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <h6 class="text-success mb-0">
+                            <i class="bi bi-sun me-2"></i>Lunch
+                          </h6>
+                          <% if day['meals']['lunch']['calories'] %>
+                            <span class="badge bg-success"><%= day['meals']['lunch']['calories'] %> cal</span>
+                          <% end %>
+                        </div>
+                        <h6 class="mb-2"><%= day['meals']['lunch']['name'] %></h6>
+                        <p class="text-muted small mb-2"><%= day['meals']['lunch']['instructions'] %></p>
+                        <small class="text-muted">
+                          <strong>Ingredients:</strong> <%= day['meals']['lunch']['ingredients']&.join(', ') %>
+                        </small>
+                      </div>
+                    <% end %>
+
+                    <!-- Dinner -->
+                    <% if day['meals']['dinner'] %>
+                      <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <h6 class="text-warning mb-0">
+                            <i class="bi bi-moon me-2"></i>Dinner
+                          </h6>
+                          <% if day['meals']['dinner']['calories'] %>
+                            <span class="badge bg-warning text-dark"><%= day['meals']['dinner']['calories'] %> cal</span>
+                          <% end %>
+                        </div>
+                        <h6 class="mb-2"><%= day['meals']['dinner']['name'] %></h6>
+                        <p class="text-muted small mb-2"><%= day['meals']['dinner']['instructions'] %></p>
+                        <small class="text-muted">
+                          <strong>Ingredients:</strong> <%= day['meals']['dinner']['ingredients']&.join(', ') %>
+                        </small>
+                      </div>
+                    <% end %>
+
+                    <!-- Snacks -->
+                    <% if day['meals']['snacks']&.any? %>
+                      <div class="mb-3">
+                        <h6 class="text-info mb-2">
+                          <i class="bi bi-cup-hot me-2"></i>Snacks
+                        </h6>
+                        <% day['meals']['snacks'].each do |snack| %>
+                          <div class="ms-3 mb-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                              <strong><%= snack['name'] %></strong>
+                              <% if snack['calories'] %>
+                                <span class="badge bg-info"><%= snack['calories'] %> cal</span>
+                              <% end %>
+                            </div>
+                            <p class="text-muted small mb-1"><%= snack['instructions'] %></p>
+                            <small class="text-muted">
+                              <strong>Ingredients:</strong> <%= snack['ingredients']&.join(', ') %>
+                            </small>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% end %>
+
+                    <!-- Daily Totals -->
+                    <% if day['daily_totals'] %>
+                      <div class="mt-3 pt-3 border-top">
+                        <h6 class="text-secondary mb-2">
+                          <i class="bi bi-calculator me-2"></i>Daily Totals
+                        </h6>
+                        <div class="row text-center">
+                          <div class="col-3">
+                            <small class="text-muted">Calories</small>
+                            <div class="fw-bold"><%= day['daily_totals']['calories'] %></div>
+                          </div>
+                          <div class="col-3">
+                            <small class="text-muted">Protein</small>
+                            <div class="fw-bold"><%= day['daily_totals']['protein'] %>g</div>
+                          </div>
+                          <div class="col-3">
+                            <small class="text-muted">Carbs</small>
+                            <div class="fw-bold"><%= day['daily_totals']['carbs'] %>g</div>
+                          </div>
+                          <div class="col-3">
+                            <small class="text-muted">Fats</small>
+                            <div class="fw-bold"><%= day['daily_totals']['fats'] %>g</div>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+          <% if @ai_results['meal_plan'] %>
+            <%= form_with url: create_from_ai_meal_plans_path, method: :post, local: true do |f| %>
+              <%= hidden_field_tag :meal_plan_json, @ai_results.to_json %>
+              <button type="submit" class="btn btn-success me-3">
+                <i class="bi bi-calendar-plus me-2"></i>Save to Meal Plans
+              </button>
+            <% end %>
+          <% end %>
+          <%= link_to grocery_lists_path, class: "btn btn-primary" do %>
+            <i class="bi bi-bag me-2"></i>Generate Grocery List
+          <% end %>
+        </div>
+      <% else %>
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          <%= simple_format(@ai_results.to_s) %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

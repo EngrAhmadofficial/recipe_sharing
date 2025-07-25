@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  name: MyString
+  date: 2025-07-06
+  meal_type: MyString
+  recipe: one
+  notes: MyText
+
+two:
+  user: two
+  name: MyString
+  date: 2025-07-06
+  meal_type: MyString
+  recipe: two
+  notes: MyText

@@ -1,0 +1,148 @@
+<div class="container">
+  <!-- Hero Section -->
+  <div class="hero-section fade-in-up">
+    <h1 class="text-gradient display-4 fw-bold mb-3">
+      <i class="bi bi-heart me-3"></i>Diet Advice
+    </h1>
+    <p class="lead text-muted mb-4">
+      Get personalized dietary recommendations based on your health goals and preferences.
+    </p>
+  </div>
+
+  <!-- Advice Form -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card fade-in-up">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-chat-dots me-2"></i>Get Personalized Advice
+          </h3>
+        </div>
+        <div class="card-body">
+          <%= form_with url: ai_diet_advice_path, method: :post, local: true do %>
+            <div class="mb-4">
+              <label for="goal" class="form-label">What's your primary health goal?</label>
+              <%= select_tag :goal, 
+                  options_for_select([
+                    ['Weight Loss', 'weight_loss'],
+                    ['Muscle Gain', 'muscle_gain'],
+                    ['Heart Health', 'heart_health'],
+                    ['Diabetes Management', 'diabetes'],
+                    ['Energy Boost', 'energy'],
+                    ['Digestive Health', 'digestive'],
+                    ['Athletic Performance', 'athletic'],
+                    ['General Wellness', 'wellness']
+                  ]), 
+                  { prompt: "Select your goal", class: "form-control" } %>
+              <div class="form-text">
+                <i class="bi bi-lightbulb me-1"></i>
+                Your AI will consider your preferences and restrictions when providing advice.
+              </div>
+            </div>
+            <div class="text-center">
+              <%= submit_tag "Get Advice", class: "btn btn-primary btn-lg" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <% if @ai_results.present? %>
+    <div class="mt-5 fade-in-up">
+      <% if @ai_results.is_a?(Hash) && @ai_results[:error] %>
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i><%= @ai_results[:error] %>
+        </div>
+      <% else %>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="mb-0">
+              <i class="bi bi-heart me-2"></i>Personalized Diet Advice
+            </h3>
+          </div>
+          <div class="card-body">
+            <% advice = @ai_results['personalized_diet_recommendations'] || @ai_results['diet_advice'] || @ai_results %>
+            <% if advice['caloric_deficit'] %>
+              <h5 class="text-primary mb-2"><i class="bi bi-fire me-2"></i>Caloric Deficit</h5>
+              <p><%= advice['caloric_deficit'] %></p>
+            <% end %>
+            <% if advice['macronutrient_distribution'] %>
+              <h5 class="text-primary mb-2"><i class="bi bi-pie-chart me-2"></i>Macronutrient Distribution</h5>
+              <ul class="list-group mb-3">
+                <% advice['macronutrient_distribution'].each do |macro, value| %>
+                  <li class="list-group-item"><strong><%= macro.titleize %>:</strong> <%= value %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if advice['meal_timing'] %>
+              <h5 class="text-primary mb-2"><i class="bi bi-clock me-2"></i>Meal Timing</h5>
+              <p><%= advice['meal_timing'] %></p>
+            <% end %>
+            <% if advice['foods_to_include'] %>
+              <h5 class="text-success mb-2"><i class="bi bi-plus-circle me-2"></i>Foods to Include</h5>
+              <ul class="list-group mb-3">
+                <% advice['foods_to_include'].each do |food| %>
+                  <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i><%= food %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if advice['foods_to_avoid'] %>
+              <h5 class="text-danger mb-2"><i class="bi bi-x-circle me-2"></i>Foods to Avoid</h5>
+              <ul class="list-group mb-3">
+                <% advice['foods_to_avoid'].each do |food| %>
+                  <li class="list-group-item"><i class="bi bi-x-circle text-danger me-2"></i><%= food %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if advice['progress_tracking_tips'] %>
+              <h5 class="text-info mb-2"><i class="bi bi-graph-up-arrow me-2"></i>Progress Tracking Tips</h5>
+              <ul class="list-group mb-3">
+                <% advice['progress_tracking_tips'].each do |tip| %>
+                  <li class="list-group-item"><i class="bi bi-graph-up-arrow text-info me-2"></i><%= tip %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if advice['recipe_suggestions'] %>
+              <h5 class="text-warning mb-2"><i class="bi bi-egg-fried me-2"></i>Recipe Suggestions</h5>
+              <ul class="list-group mb-3">
+                <% advice['recipe_suggestions'].each do |recipe| %>
+                  <li class="list-group-item"><i class="bi bi-egg-fried text-warning me-2"></i><%= recipe %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if advice.is_a?(String) %>
+              <p><%= advice %></p>
+            <% end %>
+            <% if advice.is_a?(Hash) %>
+              <% (advice.keys - [
+                'caloric_deficit', 'macronutrient_distribution', 'meal_timing',
+                'foods_to_include', 'foods_to_avoid', 'progress_tracking_tips', 'recipe_suggestions'
+              ]).each do |other_key| %>
+                <% if advice[other_key].is_a?(String) %>
+                  <h5 class="text-secondary mb-2"><%= other_key.titleize %></h5>
+                  <p><%= advice[other_key] %></p>
+                <% elsif advice[other_key].is_a?(Array) %>
+                  <h5 class="text-secondary mb-2"><%= other_key.titleize %></h5>
+                  <ul class="list-group mb-3">
+                    <% advice[other_key].each do |item| %>
+                      <li class="list-group-item"><%= item %></li>
+                    <% end %>
+                  </ul>
+                <% elsif advice[other_key].is_a?(Hash) %>
+                  <h5 class="text-secondary mb-2"><%= other_key.titleize %></h5>
+                  <ul class="list-group mb-3">
+                    <% advice[other_key].each do |k, v| %>
+                      <li class="list-group-item"><strong><%= k.titleize %>:</strong> <%= v %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

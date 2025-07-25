@@ -1,0 +1,65 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Meal Plans</h1>
+    <div>
+      <%= link_to "New Meal Plan", new_meal_plan_path, class: "btn btn-primary me-2" %>
+      <%= link_to "Generate AI Plan", generate_ai_plan_meal_plans_path, class: "btn btn-success" %>
+    </div>
+  </div>
+
+  <% if @meal_plans.any? %>
+    <% @weekly_plans.each do |week_start, plans| %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Week of <%= week_start.strftime("%B %d, %Y") %></h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <% (0..6).each do |day_offset| %>
+              <% current_date = week_start + day_offset.days %>
+              <% day_plans = plans.select { |plan| plan.date == current_date } %>
+              
+              <div class="col-md-1 text-center">
+                <div class="fw-bold"><%= current_date.strftime("%a") %></div>
+                <div class="text-muted small"><%= current_date.strftime("%m/%d") %></div>
+              </div>
+              
+              <div class="col-md-11 mb-3">
+                <% if day_plans.any? %>
+                  <% day_plans.each do |plan| %>
+                    <div class="d-flex justify-content-between align-items-center p-2 border rounded mb-2">
+                      <div>
+                        <strong><%= plan.meal_type.titleize %></strong>
+                        <% if plan.recipe %>
+                          - <%= link_to plan.recipe.name, recipe_path(plan.recipe) %>
+                        <% else %>
+                          - <%= plan.name %>
+                        <% end %>
+                      </div>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to "View", meal_plan_path(plan), class: "btn btn-outline-primary" %>
+                        <%= link_to "Edit", edit_meal_plan_path(plan), class: "btn btn-outline-secondary" %>
+                        <%= link_to "Delete", meal_plan_path(plan), method: :delete, 
+                            data: { confirm: "Are you sure?" }, class: "btn btn-outline-danger" %>
+                      </div>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <div class="text-muted text-center p-2 border rounded">
+                    No meals planned
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-5">
+      <h3 class="text-muted">No meal plans yet</h3>
+      <p class="text-muted">Start planning your meals to see them here.</p>
+      <%= link_to "Create Your First Meal Plan", new_meal_plan_path, class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>

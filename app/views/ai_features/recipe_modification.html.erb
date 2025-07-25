@@ -1,0 +1,63 @@
+<div class="container">
+  <!-- Hero Section -->
+  <div class="hero-section fade-in-up">
+    <h1 class="text-gradient display-4 fw-bold mb-3">
+      <i class="bi bi-pencil-square me-3"></i>Recipe Modification
+    </h1>
+    <p class="lead text-muted mb-4">
+      Adapt any recipe to fit your dietary needs and preferences. Our AI will suggest modifications while maintaining flavor.
+    </p>
+  </div>
+
+  <!-- Modification Form -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card fade-in-up">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-gear me-2"></i>Modify Recipe
+          </h3>
+        </div>
+        <div class="card-body">
+          <%= form_with url: ai_recipe_modification_path, method: :post, local: true do %>
+            <div class="mb-4">
+              <label for="recipe_id" class="form-label">Select a recipe to modify</label>
+              <%= select_tag :recipe_id, 
+                  options_from_collection_for_select(@recipes, :id, :name), 
+                  { prompt: "Choose a recipe", class: "form-control" } %>
+              <div class="form-text">
+                <i class="bi bi-lightbulb me-1"></i>
+                The AI will consider your dietary preferences and restrictions when suggesting modifications.
+              </div>
+            </div>
+            <div class="text-center">
+              <%= submit_tag "Modify Recipe", class: "btn btn-primary btn-lg" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <% if @ai_results.present? %>
+    <div class="mt-5 fade-in-up">
+      <% if @ai_results.is_a?(Hash) && @ai_results[:error] %>
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i><%= @ai_results[:error] %>
+        </div>
+      <% else %>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="mb-0">
+              <i class="bi bi-pencil-square me-2"></i>Modified Recipe
+            </h3>
+          </div>
+          <div class="card-body">
+            <%= simple_format(@ai_results.to_s) %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

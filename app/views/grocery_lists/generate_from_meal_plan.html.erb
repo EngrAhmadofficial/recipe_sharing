@@ -1,0 +1,265 @@
+<div class="container">
+  <!-- Hero Section -->
+  <div class="hero-section fade-in-up">
+    <h1 class="text-gradient display-4 fw-bold mb-3">
+      <i class="bi bi-cart-check me-3"></i>Generate Grocery List
+    </h1>
+    <p class="lead text-muted mb-4">
+      Create a smart grocery list from your meal plans. Our AI will analyze your recipes and generate a comprehensive shopping list.
+    </p>
+  </div>
+
+  <!-- Meal Plan Selection Form -->
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card fade-in-up">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-list-ul me-2"></i>Select Meal Plans
+          </h3>
+        </div>
+        <div class="card-body">
+          <form action="<%= generate_from_meal_plan_grocery_lists_path %>" method="post" id="meal-plan-form">
+            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">
+                      <input type="checkbox" id="select-all-meal-plans">
+                      <label for="select-all-meal-plans" class="ms-2 mb-0">Select All</label>
+                    </th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Meal Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Recipe?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% grouped = @meal_plans.group_by(&:date) %>
+                  <% grouped.each do |date, plans_by_date| %>
+                    <tr class="table-secondary">
+                      <td colspan="4"><strong><%= date.strftime('%A, %Y-%m-%d') %></strong></td>
+                    </tr>
+                    <% plans_by_date.group_by(&:meal_type).each do |meal_type, plans_by_meal| %>
+                      <tr class="table-light">
+                        <td colspan="4"><em><%= meal_type.titleize %></em></td>
+                      </tr>
+                      <% plans_by_meal.each do |plan| %>
+                        <tr>
+                          <td class="text-center">
+                            <%= check_box_tag "meal_plan_ids[]", plan.id, false, id: "meal_plan_#{plan.id}", class: "meal-plan-checkbox" %>
+                          </td>
+                          <td><%= plan.date.strftime('%Y-%m-%d') %></td>
+                          <td><%= plan.meal_type.titleize %></td>
+                          <td><%= plan.name %></td>
+                          <td>
+                            <% if plan.recipe %>
+                              <span class="text-success">✔</span>
+                            <% else %>
+                              <span class="text-danger">✘</span>
+                            <% end %>
+                          </td>
+                        </tr>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+            <div class="text-center mt-3">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-magic me-2"></i>Generate Grocery List
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var selectAll = document.getElementById('select-all-meal-plans');
+    var checkboxes = document.querySelectorAll('.meal-plan-checkbox');
+    if (selectAll) {
+      selectAll.addEventListener('change', function() {
+        checkboxes.forEach(function(cb) {
+          cb.checked = selectAll.checked;
+        });
+      });
+    }
+  });
+</script>
+
+  <!-- Generated Grocery List Results -->
+  <% if @ai_grocery_list.present? %>
+    <div class="mt-5 fade-in-up">
+      <% if @ai_grocery_list.is_a?(Hash) && @ai_grocery_list[:error] %>
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i><%= @ai_grocery_list[:error] %>
+        </div>
+      <% else %>
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="mb-0">
+                <i class="bi bi-list-check me-2"></i>Generated Grocery List
+              </h3>
+            </div>
+            <div>
+              <button class="btn btn-outline-secondary btn-sm me-2" onclick="copyGroceryList()">
+                <i class="bi bi-clipboard me-1"></i>Copy to Clipboard
+              </button>
+              <button class="btn btn-outline-secondary btn-sm" onclick="printGroceryList()">
+                <i class="bi bi-printer me-1"></i>Print
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info mb-4">
+              <i class="bi bi-info-circle me-2"></i>
+              You can use this grocery list to order from any grocery website or app. Copy or print the list for your convenience.
+            </div>
+            <div id="grocery-list-print-section">
+            <% if @ai_grocery_list.is_a?(Hash) && @ai_grocery_list['grocery_list'] %>
+              <div class="grocery-results">
+                <h4 class="text-primary mb-3">
+                  <i class="bi bi-basket me-2"></i>Shopping List
+                </h4>
+                
+                <% if @ai_grocery_list['grocery_list']['categories'] %>
+                  <div class="grocery-categories">
+                    <% @ai_grocery_list['grocery_list']['categories'].each do |category, items| %>
+                      <div class="category-section mb-4">
+                        <h5 class="text-success mb-3">
+                          <i class="bi bi-tag me-2"></i><%= category.titleize %>
+                        </h5>
+                        <div class="grocery-items">
+                          <% if items.is_a?(Array) %>
+                            <% items.each do |item| %>
+                              <div class="grocery-item">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <span class="item-name"><%= item %></span>
+                              </div>
+                            <% end %>
+                          <% elsif items.is_a?(Hash) %>
+                            <% items.each do |item_name, details| %>
+                              <div class="grocery-item">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <span class="item-name">
+                                  <%= item_name %>
+                                  <% if details.is_a?(Hash) && details['quantity'] %>
+                                    <small class="text-muted">(<%= details['quantity'] %>)</small>
+                                  <% end %>
+                                </span>
+                              </div>
+                            <% end %>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                <% elsif @ai_grocery_list['grocery_list']['items'] %>
+                  <div class="grocery-items">
+                    <% @ai_grocery_list['grocery_list']['items'].each do |item| %>
+                      <div class="grocery-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <span class="item-name"><%= item %></span>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+                
+                <% if @ai_grocery_list['grocery_list']['notes'] %>
+                  <div class="mt-4">
+                    <h5 class="text-info mb-3">
+                      <i class="bi bi-lightbulb me-2"></i>Shopping Notes
+                    </h5>
+                    <div class="shopping-notes">
+                      <% @ai_grocery_list['grocery_list']['notes'].each do |note| %>
+                        <div class="note-item">
+                          <i class="bi bi-info-circle text-info me-2"></i><%= note %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                No grocery list generated. Please try with a different date range.
+              </div>
+            <% end %>
+            </div>
+            <!-- End grocery-list-print-section -->
+            
+            <!-- Save to Grocery List Form -->
+            <div class="mt-4">
+              <form action="<%= grocery_lists_path %>" method="post">
+                <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+                <input type="hidden" name="grocery_list[items]" 
+                       value="<%= 
+                         if @ai_grocery_list['grocery_list']['items']
+                           @ai_grocery_list['grocery_list']['items'].join(', ')
+                         elsif @ai_grocery_list['grocery_list']['categories']
+                           items_list = []
+                           @ai_grocery_list['grocery_list']['categories'].each do |category, items|
+                             if items.is_a?(Array)
+                               items_list.concat(items)
+                             elsif items.is_a?(Hash)
+                               items_list.concat(items.keys)
+                             end
+                           end
+                           items_list.join(', ')
+                         else
+                           ''
+                         end
+                       %>">
+                <div class="row">
+                  <div class="col-md-8">
+                    <input type="text" name="grocery_list[name]" 
+                           class="form-control" 
+                           placeholder="Enter grocery list name (e.g., 'Weekly Shopping List')"
+                           value="Grocery List - <%= Date.current.strftime('%B %d, %Y') %>">
+                  </div>
+                  <div class="col-md-4">
+                    <button type="submit" class="btn btn-success w-100">
+                      <i class="bi bi-save me-2"></i>Save List
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+<script>
+function copyGroceryList() {
+  var section = document.getElementById('grocery-list-print-section');
+  if (!section) return;
+  var range = document.createRange();
+  range.selectNode(section);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+  try {
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    alert('Grocery list copied to clipboard!');
+  } catch (err) {
+    alert('Failed to copy grocery list.');
+  }
+}
+function printGroceryList() {
+  var printContents = document.getElementById('grocery-list-print-section').innerHTML;
+  var originalContents = document.body.innerHTML;
+  document.body.innerHTML = printContents;
+  window.print();
+  document.body.innerHTML = originalContents;
+  window.location.reload();
+}
+</script> 

@@ -1,0 +1,164 @@
+<div class="container">
+  <!-- Hero Section -->
+  <div class="hero-section fade-in-up">
+    <h1 class="text-gradient display-4 fw-bold mb-3">
+      <i class="bi bi-graph-up me-3"></i>Nutrition Analysis
+    </h1>
+    <p class="lead text-muted mb-4">
+      Get detailed nutritional insights for your recipes. Our AI analyzes ingredients and provides comprehensive nutrition information.
+    </p>
+  </div>
+
+  <!-- Analysis Form -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card fade-in-up">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-calculator me-2"></i>Analyze Recipe Nutrition
+          </h3>
+        </div>
+        <div class="card-body">
+          <form action="<%= ai_nutrition_analysis_path %>" method="post">
+            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+            <div class="mb-4">
+              <label for="recipe_data" class="form-label">Recipe Data</label>
+              <textarea name="recipe_data" id="recipe_data" 
+                  placeholder="Enter your recipe ingredients and instructions here..." 
+                  class="form-control" 
+                  rows="8"><%= params[:recipe_data] %></textarea>
+              <div class="form-text">
+                <i class="bi bi-lightbulb me-1"></i>
+                Include ingredients with quantities and cooking instructions for the most accurate analysis.
+              </div>
+            </div>
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary btn-lg">Analyze Nutrition</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <% if @ai_results.present? %>
+    <div class="mt-5 fade-in-up">
+      <% if @ai_results.is_a?(Hash) && @ai_results[:error] %>
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i><%= @ai_results[:error] %>
+        </div>
+      <% else %>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="mb-0">
+              <i class="bi bi-graph-up me-2"></i>Nutritional Analysis Results
+            </h3>
+          </div>
+          <div class="card-body">
+            <% if @ai_results['recipe'] && @ai_results['recipe']['ingredients'] %>
+              <h5 class="text-primary mb-2"><i class="bi bi-list-ul me-2"></i>Recipe Ingredients</h5>
+              <ul class="list-group mb-3">
+                <% @ai_results['recipe']['ingredients'].each do |ingredient| %>
+                  <li class="list-group-item"><i class="bi bi-check me-2"></i><%= ingredient %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            
+            <% breakdown = @ai_results['nutritional_breakdown'] || @ai_results['nutrition'] || {} %>
+            <% if breakdown['calories'] %>
+              <h5 class="text-primary mb-2"><i class="bi bi-fire me-2"></i>Calories</h5>
+              <p><span class="badge bg-primary fs-6"><%= breakdown['calories'] %> kcal</span></p>
+            <% end %>
+            <% if breakdown['macros'] %>
+              <h5 class="text-success mb-2"><i class="bi bi-pie-chart me-2"></i>Macronutrients</h5>
+              <ul class="list-group mb-3">
+                <% breakdown['macros'].each do |macro, value| %>
+                  <li class="list-group-item">
+                    <strong><%= macro.titleize %>:</strong> 
+                    <% if value.is_a?(String) && value.match?(/\d+g/) %>
+                      <%= value %>
+                    <% else %>
+                      <%= value %> g
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if breakdown['vitamins'] %>
+              <h5 class="text-info mb-2"><i class="bi bi-capsule me-2"></i>Vitamins</h5>
+              <ul class="list-group mb-3">
+                <% breakdown['vitamins'].each do |vit, value| %>
+                  <li class="list-group-item"><strong><%= vit.titleize %>:</strong> <%= value %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if breakdown['minerals'] %>
+              <h5 class="text-secondary mb-2"><i class="bi bi-droplet-half me-2"></i>Minerals</h5>
+              <ul class="list-group mb-3">
+                <% breakdown['minerals'].each do |min, value| %>
+                  <li class="list-group-item"><strong><%= min.titleize %>:</strong> <%= value %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if @ai_results['health_benefits'] %>
+              <h5 class="text-success mb-2"><i class="bi bi-heart-pulse me-2"></i>Health Benefits</h5>
+              <ul class="list-group mb-3">
+                <% @ai_results['health_benefits'].each do |benefit| %>
+                  <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i><%= benefit %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if @ai_results['potential_concerns'] %>
+              <h5 class="text-danger mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Potential Concerns</h5>
+              <ul class="list-group mb-3">
+                <% @ai_results['potential_concerns'].each do |concern| %>
+                  <li class="list-group-item"><i class="bi bi-x-circle text-danger me-2"></i><%= concern %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if @ai_results['suggestions_for_improvement'] %>
+              <h5 class="text-warning mb-2"><i class="bi bi-lightbulb me-2"></i>Suggestions for Improvement</h5>
+              <ul class="list-group mb-3">
+                <% @ai_results['suggestions_for_improvement'].each do |suggestion| %>
+                  <li class="list-group-item"><i class="bi bi-lightbulb text-warning me-2"></i><%= suggestion %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if @ai_results['dietary_classification'] %>
+              <h5 class="text-info mb-2"><i class="bi bi-tags me-2"></i>Dietary Classification</h5>
+              <div class="dietary-tags mb-3">
+                <% if @ai_results['dietary_classification'].is_a?(Array) %>
+                  <% @ai_results['dietary_classification'].each do |classification| %>
+                    <span class="badge bg-success me-2 mb-2"><%= classification %></span>
+                  <% end %>
+                <% else %>
+                  <% @ai_results['dietary_classification'].each do |k, v| %>
+                    <span class="badge <%= v.to_s.include?('true') ? 'bg-success' : 'bg-secondary' %> me-2 mb-2">
+                      <%= k.titleize %>
+                      <% if v.is_a?(String) && v.include?('%') %>
+                        (<%= v %>)
+                      <% elsif v.is_a?(String) && v.include?('true') %>
+                        ✓
+                      <% elsif v.is_a?(TrueClass) && v %>
+                        ✓
+                      <% end %>
+                    </span>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+            <% if @ai_results['dietary_classifications'] %>
+              <h5 class="text-info mb-2"><i class="bi bi-tags me-2"></i>Dietary Classifications</h5>
+              <div class="dietary-tags mb-3">
+                <% @ai_results['dietary_classifications'].each do |classification| %>
+                  <span class="badge bg-primary me-2 mb-2"><%= classification %></span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
